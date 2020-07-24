@@ -1,0 +1,60 @@
+#include "OneWire.h"
+#include "DS18.h"
+DS18 sensor(D4);
+
+char temp[32];
+float previous_temp = 0;
+float current_temp;
+
+enum MyStates 
+{
+  IDLE_STATE,
+  MEASURING_STATE,
+};
+
+MyStates State = IDLE_STATE;
+
+
+void setup()
+{
+  Particle.variable("Temp", temp);
+}
+
+
+void loop() 
+{
+  switch (State) {
+      case IDLE_STATE:
+        static int time_passed = 0;
+        if (Time.second() - time_passed >= 10)
+        {
+           State = MEASURING_STATE;
+           time_passed = Time.second();
+        }
+        break;
+      case MEASURING_STATE:
+        tempSensor();
+        State = IDLE_STATE;
+        break;
+  }
+}
+void tempSensor()
+{
+  if (sensor.read())
+  {
+    current_temp = sensor.celsius();
+    Serial.println(current_temp);
+    if (abs(current_temp - previous_temp) >=1)
+    {
+      snprintf(temp, sizeof(temp), "Temperature %.2f", sensor.celsius());
+      Particle.publish("Temperature", String(current_temp), PRIVATE);
+      Serial.println(current_temp);
+      previous_temp = current_temp;
+      Serial.println(previous_temp);
+    }
+  }
+  else
+  {
+    Serial.println("Problem!");
+  }
+}
