@@ -47,7 +47,7 @@ void tempSensor()
     if (abs(current_temp - previous_temp) >=1)
     {
       snprintf(temp, sizeof(temp), "Temperature %.2f", sensor.celsius());
-      Particle.publish("Temperature", String(current_temp), PRIVATE);
+      Particle.publish("Temperature", String(sensor.celsius()), PRIVATE);
       Serial.println(current_temp);
       previous_temp = current_temp;
       Serial.println(previous_temp);
